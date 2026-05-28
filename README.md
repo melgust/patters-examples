@@ -190,3 +190,124 @@ historial.deshacer()  # Revierte el último comando ejecutado
 | Strategy | Comportamiento | Necesito intercambiar algoritmos dinámicamente |
 | Observer | Comportamiento | Varios objetos deben reaccionar a un cambio |
 | Command | Comportamiento | Necesito encapsular, encolar o deshacer operaciones |
+
+---
+
+## Principios SOLID
+
+SOLID es un acrónimo de cinco principios de diseño orientado a objetos que hacen el código más mantenible, flexible y escalable.
+
+---
+
+### S — Single Responsibility Principle (Responsabilidad Única)
+
+**¿Por qué?**
+Si una clase tiene múltiples responsabilidades, un cambio en una de ellas puede romper las demás.
+
+**¿Cómo funciona?**
+Cada clase tiene una sola razón para cambiar. En el ejemplo, `Empleado` solo modela datos, `EmpleadoRepositorio` solo persiste, y `EmpleadoReporte` solo genera reportes.
+
+**Clases:**
+- `Empleado` — Contiene los datos del empleado y su lógica de negocio (calcular pago).
+- `EmpleadoRepositorio` — Se encarga exclusivamente de guardar en base de datos.
+- `EmpleadoReporte` — Se encarga exclusivamente de generar reportes.
+
+```python
+emp = Empleado("Ana", 5000)
+EmpleadoRepositorio().guardar(emp)   # Persistencia separada
+EmpleadoReporte().generar(emp)       # Reportes separados
+```
+
+---
+
+### O — Open/Closed Principle (Abierto/Cerrado)
+
+**¿Por qué?**
+Modificar código existente introduce riesgos de bugs. Es mejor extender sin tocar lo que ya funciona.
+
+**¿Cómo funciona?**
+Se define una abstracción (`Descuento`) y cada nuevo tipo de descuento se agrega como una nueva clase sin modificar la `Calculadora` existente.
+
+**Clases:**
+- `Descuento` (ABC) — Interfaz abstracta que define el contrato `aplicar(precio)`.
+- `DescuentoEstudiante`, `DescuentoEmpleado`, `DescuentoVIP` — Implementaciones concretas, cada una con su lógica.
+- `Calculadora` — Recibe cualquier `Descuento` y lo aplica. Nunca se modifica.
+
+```python
+calc = Calculadora()
+calc.calcular(DescuentoVIP(), 100)  # Agregar descuentos sin tocar Calculadora
+```
+
+---
+
+### L — Liskov Substitution Principle (Sustitución de Liskov)
+
+**¿Por qué?**
+Si una subclase no puede usarse donde se espera la clase base, la herencia está mal diseñada.
+
+**¿Cómo funciona?**
+En vez de que `Pinguino` herede de `AveVoladora` y lance una excepción al volar, se crean jerarquías correctas: `AveVoladora` y `AveNoVoladora`, ambas hijas de `Ave` con el método `mover()`.
+
+**Clases:**
+- `Ave` (ABC) — Interfaz base con `mover()`.
+- `AveVoladora` — Implementa `mover()` como vuelo.
+- `AveNoVoladora` — Implementa `mover()` como caminar.
+- `Aguila`, `Pinguino` — Heredan de la jerarquía correcta sin romper contratos.
+
+```python
+def hacer_mover(ave: Ave):
+    print(ave.mover())  # Funciona con cualquier Ave sin sorpresas
+```
+
+---
+
+### I — Interface Segregation Principle (Segregación de Interfaces)
+
+**¿Por qué?**
+Una interfaz grande obliga a las clases a implementar métodos que no necesitan (como un robot obligado a implementar `comer()`).
+
+**¿Cómo funciona?**
+Se divide una interfaz grande en interfaces pequeñas y específicas. Cada clase implementa solo las que le corresponden.
+
+**Clases:**
+- `Trabajable` (ABC) — Interfaz con `trabajar()`.
+- `Alimentable` (ABC) — Interfaz con `comer()`.
+- `Humano` — Implementa ambas interfaces porque las necesita.
+- `Robot` — Solo implementa `Trabajable` porque no come.
+
+```python
+Robot().trabajar()   # Solo implementa lo que necesita
+Humano().comer()     # Implementa ambas interfaces
+```
+
+---
+
+### D — Dependency Inversion Principle (Inversión de Dependencias)
+
+**¿Por qué?**
+Si una clase de alto nivel depende directamente de una implementación concreta, cambiar la implementación requiere modificar la clase de alto nivel.
+
+**¿Cómo funciona?**
+La clase `App` no depende de `MySQL` directamente, sino de la abstracción `Database`. Esto permite inyectar cualquier base de datos sin modificar `App`.
+
+**Clases:**
+- `Database` (ABC) — Abstracción que define `conectar()`.
+- `MySQL`, `PostgreSQL`, `MongoDB` — Implementaciones concretas.
+- `App` — Módulo de alto nivel que recibe la dependencia por constructor (inyección de dependencias).
+
+```python
+App(MySQL()).iniciar()       # Usa MySQL
+App(PostgreSQL()).iniciar()  # Cambia a PostgreSQL sin tocar App
+```
+
+---
+
+## Resumen SOLID
+
+| Principio | Regla | Beneficio |
+|-----------|-------|----------|
+| S — Single Responsibility | Una clase, una razón para cambiar | Código más fácil de mantener |
+| O — Open/Closed | Extender sin modificar | Menos riesgo de bugs al agregar funcionalidad |
+| L — Liskov Substitution | Subclases sustituibles por su base | Herencia correcta y predecible |
+| I — Interface Segregation | Interfaces pequeñas y específicas | Clases no cargan métodos innecesarios |
+| D — Dependency Inversion | Depender de abstracciones | Código desacoplado y flexible |
